@@ -65,7 +65,7 @@ signinForm.addEventListener('submit', (e) => {
   const passwordVal = document.getElementById('signinPassword').value;
 
   // Simple credential check
-  if (usernameVal === 'account1' && passwordVal === 'rosery95') {
+  if (usernameVal === 'douglast' && passwordVal === 'henshall@231') {
     // Redirect to home page
     window.location.href = 'home.html';
     return;
