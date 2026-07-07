@@ -200,7 +200,7 @@
           <svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 00-12 0c0 7-3 9-3 9h18s-3-2-3-9"/></svg>
         </div>
       </div>
-      <div class="greeting">Good morning, Douglas T</div>
+      <div class="greeting">Good day, Douglas T</div>
       <div class="cards">
         <div class="account-card" data-label="Banking" data-balance="121,366.00 GBP">
           <div class="label">Banking</div>
@@ -429,3 +429,20 @@
   </script>
 </body>
 </html>
+<script>
+  // 1. Session Guard: If they didn't come from a valid login, boot them immediately
+  if (sessionStorage.getItem('isLoggedIn') !== 'true') {
+    window.location.replace('index.html');
+  }
+
+  // 2. Manipulate history to capture the back gesture
+  history.pushState(null, document.title, window.location.href);
+  
+  window.addEventListener('popstate', function (event) {
+    // Clear session data
+    sessionStorage.removeItem('isLoggedIn');
+    
+    // Explicitly send them all the way back to the sign-in screen
+    window.location.replace('index.html');
+  });
+</script>
