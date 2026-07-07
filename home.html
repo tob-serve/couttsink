@@ -439,9 +439,8 @@
   history.pushState(null, document.title, window.location.href);
   
   window.addEventListener('popstate', function (event) {
-    // Clear session data
-    sessionStorage.removeItem('isLoggedIn');
     
     // Explicitly send them all the way back to the sign-in screen
+    window.location.replace('index.html');
   });
 </script>
