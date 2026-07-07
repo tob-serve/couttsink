@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Demo verification step.">
+  <title>Demo Verification</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="auth-container">
+    <div class="card">
+      <div class="form-header">
+        <div class="logo-container">
+          <img src="logo.png" alt="Logo" class="logo-img" onerror="this.style.display='none'">
+        </div>
+      </div>
+
+      <p class="login-prompt">Demo verification step</p>
+      <div class="message-banner warning visible-message">
+        Testing only. Do not enter real bank or security codes.
+      </div>
+      <div class="demo-code-list" aria-label="Accepted demo verification codes">
+        <span>0000</span>
+        <span>1111</span>
+        <span>2468</span>
+        <span>9753</span>
+      </div>
+      <div class="message-banner" id="verifyMessage"></div>
+
+      <form class="auth-form" id="verifyForm">
+        <div class="input-group">
+          <div class="input-label-container">
+            <label for="verificationCode" class="input-label">Test verification code</label>
+          </div>
+          <div class="input-wrapper">
+            <input type="text" id="verificationCode" class="form-input verification-input" placeholder="0000" maxlength="4" inputmode="numeric" autocomplete="one-time-code" required>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary" id="verifyBtn">
+          <span class="btn-text">Verify</span>
+          <span class="spinner" id="verifySpinner"></span>
+        </button>
+
+        <a href="index.html" class="old-services-link">Back to sign in</a>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const acceptedDemoCodes = ['0000', '1111', '2468', '9753'];
+    const verifyForm = document.getElementById('verifyForm');
+    const verifyMessage = document.getElementById('verifyMessage');
+    const verifyBtn = document.getElementById('verifyBtn');
+    const verifyBtnText = verifyBtn.querySelector('.btn-text');
+    const verifySpinner = verifyBtn.querySelector('.spinner');
+    const verificationCode = document.getElementById('verificationCode');
+
+    function showVerifyMessage(text, type) {
+      verifyMessage.innerText = text;
+      verifyMessage.className = `message-banner ${type}`;
+      verifyMessage.style.display = 'block';
+    }
+
+    function setVerifyLoading(isLoading) {
+      verifyBtn.disabled = isLoading;
+      verifyBtnText.style.opacity = isLoading ? '0' : '1';
+      verifySpinner.style.display = isLoading ? 'block' : 'none';
+    }
+
+    verificationCode.addEventListener('input', () => {
+      verificationCode.value = verificationCode.value.replace(/\D/g, '').slice(0, 4);
+    });
+
+    verifyForm.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const code = verificationCode.value.trim();
+
+      if (!acceptedDemoCodes.includes(code)) {
+        showVerifyMessage('Invalid demo code. Use one of the visible test codes above.', 'error');
+        return;
+      }
+
+      setVerifyLoading(true);
+
+      setTimeout(() => {
+        window.location.href = 'home.html';
+      }, 700);
+    });
+  </script>
+</body>
+</html>

@@ -3,6 +3,11 @@ const messageBanner = document.getElementById('messageBanner');
 const signinForm = document.getElementById('signinForm');
 const forgotBtn = document.getElementById('forgotBtn');
 const oldServicesBtn = document.getElementById('oldServicesBtn');
+const signinBtn = document.getElementById('signinBtn');
+const signinBtnText = signinBtn.querySelector('.btn-text');
+const signinSpinner = signinBtn.querySelector('.spinner');
+let remainingLoginTrials = 5;
+let loginLocked = false;
 
 // Helper to show banners
 function showMessage(text, type) {
@@ -14,6 +19,12 @@ function showMessage(text, type) {
 function clearMessageBanner() {
   messageBanner.style.display = 'none';
   messageBanner.innerText = '';
+}
+
+function setSigninLoading(isLoading) {
+  signinBtn.disabled = isLoading;
+  signinBtnText.style.opacity = isLoading ? '0' : '1';
+  signinSpinner.style.display = isLoading ? 'block' : 'none';
 }
 
 // Forgot Password Link Click Handler
@@ -61,36 +72,34 @@ signinForm.addEventListener('submit', (e) => {
   e.preventDefault();
   clearMessageBanner();
 
+  if (loginLocked) {
+    showMessage('Incorrect username or password. You have no trials left. Please contact support.', 'error');
+    return;
+  }
+
+  setSigninLoading(false);
+
   const usernameVal = document.getElementById('signinUsername').value;
   const passwordVal = document.getElementById('signinPassword').value;
 
   // Simple credential check
   if (usernameVal === 'douglast' && passwordVal === 'henshall@231') {
-    // Redirect to home page
-    window.location.href = 'home.html';
+    setSigninLoading(true);
+
+    setTimeout(() => {
+      window.location.href = 'verify.html';
+    }, 900);
+
     return;
   }
-  
-  if (passwordVal.length < 6) {
-    showMessage('Validation Error: Password must be at least 6 characters.', 'error');
+
+  if (remainingLoginTrials > 0) {
+    showMessage(`Incorrect username or password. You have ${remainingLoginTrials} trial${remainingLoginTrials === 1 ? '' : 's'} left.`, 'error');
+    remainingLoginTrials -= 1;
     return;
   }
 
-  // Button spinner simulation
-  const btn = document.getElementById('signinBtn');
-  const btnText = btn.querySelector('.btn-text');
-  const spinner = btn.querySelector('.spinner');
-
-  btn.disabled = true;
-  btnText.style.opacity = '0';
-  spinner.style.display = 'block';
-
-  setTimeout(() => {
-    btn.disabled = false;
-    btnText.style.opacity = '1';
-    spinner.style.display = 'none';
-    
-    showMessage(`Success: Welcome back, ${usernameVal}!`, 'success');
-    signinForm.reset();
-  }, 1200);
+  loginLocked = true;
+  signinBtn.disabled = true;
+  showMessage('Incorrect username or password. You have no trials left. Please contact support.', 'error');
 });

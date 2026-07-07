@@ -32,6 +32,17 @@ body {
   padding: 1.5rem;
 }
 
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 /* Container */
 .auth-container {
   width: 100%;
@@ -44,6 +55,7 @@ body {
   border-radius: 0;
   padding: 2.5rem 2.25rem;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 10px 15px -3px rgba(0, 0, 0, 0.03);
+  animation: fadeUp 0.45s ease-out both;
 }
 
 /* Header */
@@ -62,6 +74,7 @@ body {
   height: 80px;
   width: auto;
   object-fit: contain;
+  animation: fadeUp 0.5s ease-out 0.08s both;
 }
 
 .form-header h2 {
@@ -91,6 +104,15 @@ body {
   flex-direction: column;
   gap: 0.375rem;
   position: relative;
+  animation: fadeUp 0.4s ease-out both;
+}
+
+.input-group:nth-of-type(1) {
+  animation-delay: 0.1s;
+}
+
+.input-group:nth-of-type(2) {
+  animation-delay: 0.16s;
 }
 
 .input-label-container {
@@ -132,6 +154,10 @@ body {
 .form-input:focus {
   border-color: var(--border-focus);
   box-shadow: 0 0 0 2px rgba(15, 23, 42, 0.05);
+}
+
+.form-input:hover {
+  border-color: rgba(64, 7, 24, 0.35);
 }
 
 /* Password eye button */
@@ -234,6 +260,7 @@ body {
   transition: var(--transition);
   width: 100%;
   position: relative;
+  animation: fadeUp 0.4s ease-out 0.22s both;
 }
 
 .btn-primary {
@@ -245,22 +272,31 @@ body {
 .btn-primary:hover {
   background: var(--primary);
   color: #ffffff;
+  transform: translateY(-1px);
+  box-shadow: 0 10px 20px rgba(64, 7, 24, 0.12);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+  box-shadow: none;
 }
 
 .btn-primary:disabled {
   opacity: 0.6;
   cursor: not-allowed;
-  background: transparent;
-  color: var(--text-muted);
-  border-color: var(--border-color);
+  background: var(--primary);
+  color: #ffffff;
+  border-color: var(--primary);
+  transform: none;
+  box-shadow: none;
 }
 
 /* Spinner */
 .spinner {
   width: 16px;
   height: 16px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-top-color: #fff;
+  border: 2px solid rgba(255, 255, 255, 0.45);
+  border-top-color: #ffffff;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
   display: none;
@@ -278,6 +314,7 @@ body {
   display: none;
   margin-bottom: 1.25rem;
   text-align: center;
+  animation: fadeUp 0.25s ease-out both;
 }
 
 .message-banner.success {
@@ -294,6 +331,42 @@ body {
   color: #991b1b;
 }
 
+.message-banner.warning {
+  display: block;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  color: #92400e;
+}
+
+.visible-message {
+  display: block;
+}
+
+.demo-code-list {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.5rem;
+  margin: 0 0 1.25rem;
+  animation: fadeUp 0.4s ease-out 0.16s both;
+}
+
+.demo-code-list span {
+  border: 1px solid var(--border-color);
+  color: var(--primary);
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 0.85rem;
+  padding: 0.45rem 0.25rem;
+  text-align: center;
+  background: #ffffff;
+}
+
+.verification-input {
+  text-align: center;
+  letter-spacing: 0.35rem;
+  font-weight: 600;
+}
+
 /* Old Services Link */
 .old-services-link {
   display: block;
@@ -304,9 +377,21 @@ body {
   text-decoration: none;
   font-weight: 500;
   transition: var(--transition);
+  animation: fadeUp 0.4s ease-out 0.28s both;
 }
 
 .old-services-link:hover {
   color: var(--primary);
   text-decoration: underline;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
 }
