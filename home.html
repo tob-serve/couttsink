@@ -430,15 +430,18 @@
 </body>
 </html>
 <script>
-  // 1. Session Guard: If they didn't come from a valid login, boot them immediately
-  if (sessionStorage.getItem('isLoggedIn') !== 'true') {
-    window.location.replace('index.html');
-  }
+<script>
+  // 1. Session Guard: If they didn't come from a valid login, boot them immediatel
+  //if (sessionStorage.getItem('isLoggedIn') !== 'true') {
+    //window.location.replace('index.html');
+  //}
 
   // 2. Manipulate history to capture the back gesture
   history.pushState(null, document.title, window.location.href);
   
   window.addEventListener('popstate', function (event) {
+    // Clear session data
+    sessionStorage.removeItem('isLoggedIn');
     
     // Explicitly send them all the way back to the sign-in screen
     window.location.replace('index.html');
