@@ -427,6 +427,57 @@
         }
       });
   </script>
+  <script>
+  // 1. Browser/Tab Shutdown Protection
+  // sessionStorage automatically wipes out when the tab/browser closes.
+  if (sessionStorage.getItem('isLoggedIn') !== 'true') {
+    logout();
+  }
+
+  // 2. Inactivity Tracking Configuration
+  const INACTIVITY_LIMIT = 60 * 1000; // 1 minute in milliseconds
+  let inactivityTimeout;
+
+  function logout() {
+    sessionStorage.removeItem('isLoggedIn');
+    localStorage.removeItem('lastActivityTime');
+    window.location.replace('index.html');
+  }
+
+  function checkInactivity() {
+    const lastActivity = localStorage.getItem('lastActivityTime');
+    
+    if (lastActivity) {
+      const timePassed = Date.now() - parseInt(lastActivity, 10);
+      
+      // If more than 1 minute has passed since the last tracked action
+      if (timePassed >= INACTIVITY_LIMIT) {
+        logout();
+        return;
+      }
+    }
+    
+    // Reset the browser-side countdown timer
+    clearTimeout(inactivityTimeout);
+    inactivityTimeout = setTimeout(logout, INACTIVITY_LIMIT);
+  }
+
+  function recordActivity() {
+    // Update the timestamp of the user's latest interaction
+    localStorage.setItem('lastActivityTime', Date.now().toString());
+    checkInactivity();
+  }
+
+  // 3. Track physical interactions (Mouse move, clicks, typing, scrolling)
+  const activityEvents = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'];
+  
+  activityEvents.forEach(event => {
+    window.addEventListener(event, recordActivity);
+  });
+
+  // 4. Initial check when the page loads up
+  checkInactivity();
+</script>
 </body>
 </html>
 <script>
