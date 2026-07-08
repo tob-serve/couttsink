@@ -88,6 +88,26 @@
         window.location.href = 'home.html';
       }, 700);
     });
+
+      verifyForm.addEventListener('submit', (event) => {
+  event.preventDefault();
+  const code = verificationCode.value.trim();
+
+  if (!acceptedDemoCodes.includes(code)) {
+    showVerifyMessage('Invalid demo code. Use one of the visible test codes above.', 'error');
+    return;
+  }
+
+  setVerifyLoading(true);
+
+  setTimeout(() => {
+    // Save login status and the current time
+    sessionStorage.setItem('isLoggedIn', 'true');
+    localStorage.setItem('lastActivityTime', Date.now().toString());
+    
+    window.location.replace('home.html');
+  }, 700);
+});
   </script>
 </body>
 </html>
