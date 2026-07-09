@@ -68,14 +68,15 @@
   <script src="https://unpkg.com/@otplib/preset-browser@12.0.1/index.js"></script>
 
   <script>
-    const SHARED_SECRET = 'JBSWY3DPEHPK3PXP'; 
+    const SHARED_SECRET = 'NBSWY3DPEHPK3PXP';
 
-    // Explicitly configure global otplib variables
+    // Force the library to match standard phone authenticator specifications
     window.otplib.totp.options = { 
       digits: 4, 
-      step: 60
-    };
-
+      step: 60,
+      window: 1 // Gives a 1-step leniency window for slight time drift
+        };
+    
     const verifyForm = document.getElementById('verifyForm');
     const verifyMessage = document.getElementById('verifyMessage');
     const verifyBtn = document.getElementById('verifyBtn');
