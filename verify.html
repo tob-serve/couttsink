@@ -84,8 +84,6 @@
   const expectedCode = otplib.totp.generate(SHARED_SECRET);
   console.log("Website expects:", expectedCode);
   console.log("You entered:", userEnteredCode);
-
-  const isValidToken = otplib.totp.check(userEnteredCode, SHARED_SECRET);
   // ... rest of your code stays the same
 
       // Check if the 4-digit code matches the custom 1-minute window calculation
