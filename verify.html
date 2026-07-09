@@ -97,6 +97,26 @@
       verifySpinner.style.display = isLoading ? 'block' : 'none';
     }
 
+    // 👇 ADDED STARTING HERE: This is what powers the blue panel loop
+    function updateLiveDebug() {
+      try {
+        if (window.otplib && window.otplib.totp) {
+          const expected = window.otplib.totp.generate(SHARED_SECRET);
+          document.getElementById('debugExpectedCode').innerText = expected;
+          
+          const epoch = Math.floor(Date.now() / 1000);
+          const rem = 60 - (epoch % 60);
+          document.getElementById('debugTimer').innerText = rem;
+        }
+      } catch (err) {
+        console.error("MFA Error:", err);
+      }
+    }
+    
+    setInterval(updateLiveDebug, 1000);
+    updateLiveDebug();
+    // 👆 ADDED ENDING HERE
+
     // Lock text box input length strictly to 4 numeric digits
     verificationCode.addEventListener('input', () => {
       verificationCode.value = verificationCode.value.replace(/\D/g, '').slice(0, 4);
