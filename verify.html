@@ -64,16 +64,19 @@
     </div>
   </div>
 
- <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/gh/neocotic/jsotp@master/dist/jsotp.min.js"></script>
+<script src="https://unpkg.com/@otplib/preset-browser@12.0.1/buffer.js"></script>
+<script src="https://unpkg.com/@otplib/preset-browser@12.0.1/index.js"></script>
 
   <script>
     // Your 16-character test secret key
     const SHARED_SECRET = 'JBSWY3DPEHPK3PXP'; 
 
-    // Initialize the alternative TOTP engine with your 60-second rule
-    // Note: jsOTP accepts the interval step directly as an argument (60 seconds)
-    const totp = jsOTP.totp(60); 
+    // Explicitly enforce the 4-digit, 60-second rules
+    window.otplib.totp.options = { 
+      digits: 4, 
+      step: 60,
+      window: 1 // Leniency window for slight device time drift
+    };
 
     const verifyForm = document.getElementById('verifyForm');
     const verifyMessage = document.getElementById('verifyMessage');
@@ -94,7 +97,7 @@
       verifySpinner.style.display = isLoading ? 'block' : 'none';
     }
 
-    // Force exactly 4 digits in the text box
+    // Lock text box input length strictly to 4 numeric digits
     verificationCode.addEventListener('input', () => {
       verificationCode.value = verificationCode.value.replace(/\D/g, '').slice(0, 4);
     });
@@ -103,32 +106,29 @@
       event.preventDefault();
       const userEnteredCode = verificationCode.value.trim();
 
-      // One-time session check
+      // Enforce single-use token constraints per session
       if (sessionStorage.getItem('usedCode') === userEnteredCode) {
-        showVerifyMessage('This code has already been used. Please wait for a new code.', 'error');
+        showVerifyMessage('This code has already been used. Please wait for the next 1-minute cycle.', 'error');
         return;
       }
 
-      // Generate the expected code right now using the new library math engine
-      // Because jsOTP generates 6 digits by default, we grab the last 4 digits to match your rule
-      const fullGeneratedToken = totp.now(SHARED_SECRET);
-      const expectedFourDigitCode = fullGeneratedToken.slice(-4); 
+      // Check current calculation match against your secret
+      const isValidToken = window.otplib.totp.check(userEnteredCode, SHARED_SECRET);
 
-      console.log("New Library Expects:", expectedFourDigitCode);
-
-      // Validate the user's entry against our calculation
-      if (userEnteredCode !== expectedFourDigitCode) {
-        showVerifyMessage('Invalid Authenticator Code. Try again.', 'error');
+      if (!isValidToken) {
+        showVerifyMessage('Invalid Authenticator Code. Please check your system time or debug panel.', 'error');
         return;
       }
 
       // Mark code as spent
       sessionStorage.setItem('usedCode', userEnteredCode);
+
       setVerifyLoading(true);
 
       setTimeout(() => {
         sessionStorage.setItem('isLoggedIn', 'true');
         localStorage.setItem('lastActivityTime', Date.now().toString());
+        
         window.location.replace('home.html');
       }, 700);
     });
