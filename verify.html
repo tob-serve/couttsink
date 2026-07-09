@@ -48,8 +48,13 @@
     </div>
   </div>
 
+<script src="https://unpkg.com/@otplib/preset-browser@12.0.1/buffer.js"></script>
+  <script src="https://unpkg.com/@otplib/preset-browser@12.0.1/index.js"></script>
+
   <script>
-    const acceptedDemoCodes = ['0070', '1985', '2468', '9753'];
+    // The exact same 16-character test secret key you typed into your phone app
+    const SHARED_SECRET = 'JBSWY3DPEHPK3PXP'; 
+
     const verifyForm = document.getElementById('verifyForm');
     const verifyMessage = document.getElementById('verifyMessage');
     const verifyBtn = document.getElementById('verifyBtn');
@@ -69,45 +74,33 @@
       verifySpinner.style.display = isLoading ? 'block' : 'none';
     }
 
+    // 2. Allow 6 digits instead of 4
     verificationCode.addEventListener('input', () => {
-      verificationCode.value = verificationCode.value.replace(/\D/g, '').slice(0, 4);
+      verificationCode.value = verificationCode.value.replace(/\D/g, '').slice(0, 6);
     });
 
     verifyForm.addEventListener('submit', (event) => {
       event.preventDefault();
-      const code = verificationCode.value.trim();
+      const userEnteredCode = verificationCode.value.trim();
 
-      if (!acceptedDemoCodes.includes(code)) {
-        showVerifyMessage('Invalid demo code. Use one of the visible test codes above.', 'error');
+      // 3. Use the library to check if the user's code matches the app's current time token
+      const isValidToken = otplib.totp.check(userEnteredCode, SHARED_SECRET);
+
+      if (!isValidToken) {
+        showVerifyMessage('Invalid Authenticator Code. Please check your phone app.', 'error');
         return;
       }
 
       setVerifyLoading(true);
 
       setTimeout(() => {
-        window.location.href = 'home.html';
+        // Keep your session security flags active
+        sessionStorage.setItem('isLoggedIn', 'true');
+        localStorage.setItem('lastActivityTime', Date.now().toString());
+        
+        window.location.replace('home.html');
       }, 700);
     });
-
-      verifyForm.addEventListener('submit', (event) => {
-  event.preventDefault();
-  const code = verificationCode.value.trim();
-
-  if (!acceptedDemoCodes.includes(code)) {
-    showVerifyMessage('Invalid demo code. Use one of the visible test codes above.', 'error');
-    return;
-  }
-
-  setVerifyLoading(true);
-
-  setTimeout(() => {
-    // Save login status and the current time
-    sessionStorage.setItem('isLoggedIn', 'true');
-    localStorage.setItem('lastActivityTime', Date.now().toString());
-    
-    window.location.replace('home.html');
-  }, 700);
-});
   </script>
 </body>
 </html>
