@@ -80,10 +80,6 @@
       event.preventDefault();
       const userEnteredCode = verificationCode.value.trim();
 
-      verifyForm.addEventListener('submit', (event) => {
-  event.preventDefault();
-  const userEnteredCode = verificationCode.value.trim();
-
   // 👇 ADD THIS LINE: It generates what the website thinks the code should be right now
   const expectedCode = otplib.totp.generate(SHARED_SECRET);
   console.log("Website expects:", expectedCode);
