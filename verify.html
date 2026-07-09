@@ -80,6 +80,18 @@
       event.preventDefault();
       const userEnteredCode = verificationCode.value.trim();
 
+      verifyForm.addEventListener('submit', (event) => {
+  event.preventDefault();
+  const userEnteredCode = verificationCode.value.trim();
+
+  // 👇 ADD THIS LINE: It generates what the website thinks the code should be right now
+  const expectedCode = otplib.totp.generate(SHARED_SECRET);
+  console.log("Website expects:", expectedCode);
+  console.log("You entered:", userEnteredCode);
+
+  const isValidToken = otplib.totp.check(userEnteredCode, SHARED_SECRET);
+  // ... rest of your code stays the same
+
       // FIXED: Prevents code reuse within the same browser session
       if (sessionStorage.getItem('usedCode') === userEnteredCode) {
         showVerifyMessage('This code has already been used. Please wait for the next 1-minute cycle.', 'error');
