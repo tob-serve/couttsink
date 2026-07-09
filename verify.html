@@ -54,52 +54,59 @@
 <script src="https://unpkg.com/@otplib/preset-browser@12.0.1/buffer.js"></script>
 <script src="https://unpkg.com/@otplib/preset-browser@12.0.1/index.js"></script>
 
-<script>
-  const SHARED_SECRET = 'JBSWY3DPEHPK3PXP'; 
-  
-  // 1. CUSTOMIZE THE RULES: Change length to 4 and window to 60 seconds (1 minute)
-  otplib.totp.options = { 
-    digits: 4, 
-    step: 60 
-  };
+<script src="https://unpkg.com/@otplib/preset-browser@12.0.1/buffer.js"></script>
+  <script src="https://unpkg.com/@otplib/preset-browser@12.0.1/index.js"></script>
 
-  const verifyForm = document.getElementById('verifyForm');
-  const verificationCode = document.getElementById('verificationCode');
+  <script>
+    // The exact same 16-character test secret key you typed into your phone app
+    const SHARED_SECRET = 'JBSWY3DPEHPK3PXP'; 
 
-  // 2. Make sure your text box restricts input back to 4 characters
-  verificationCode.addEventListener('input', () => {
-    verificationCode.value = verificationCode.value.replace(/\D/g, '').slice(0, 4);
-  });
+    const verifyForm = document.getElementById('verifyForm');
+    const verifyMessage = document.getElementById('verifyMessage');
+    const verifyBtn = document.getElementById('verifyBtn');
+    const verifyBtnText = verifyBtn.querySelector('.btn-text');
+    const verifySpinner = verifyBtn.querySelector('.spinner');
+    const verificationCode = document.getElementById('verificationCode');
 
-  verifyForm.addEventListener('submit', (event) => {
-    event.preventDefault();
-    const userEnteredCode = verificationCode.value.trim();
-
-    // 3. ENFORCE ONE-TIME USE: Check if this exact code was already used in this session
-    if (sessionStorage.getItem('usedCode') === userEnteredCode) {
-      showVerifyMessage('This code has already been used. Wait for a new one.', 'error');
-      return;
+    function showVerifyMessage(text, type) {
+      verifyMessage.innerText = text;
+      verifyMessage.className = `message-banner ${type}`;
+      verifyMessage.style.display = 'block';
     }
 
-    // Validate using our new 4-digit / 1-minute rules
-    const isValidToken = otplib.totp.check(userEnteredCode, SHARED_SECRET);
-
-    if (!isValidToken) {
-      showVerifyMessage('Invalid Authenticator Code.', 'error');
-      return;
+    function setVerifyLoading(isLoading) {
+      verifyBtn.disabled = isLoading;
+      verifyBtnText.style.opacity = isLoading ? '0' : '1';
+      verifySpinner.style.display = isLoading ? 'block' : 'none';
     }
 
-    // Mark this specific code as "spent" so it can never be used again
-    sessionStorage.setItem('usedCode', userEnteredCode);
+    // 2. Allow 6 digits instead of 4
+    verificationCode.addEventListener('input', () => {
+      verificationCode.value = verificationCode.value.replace(/\D/g, '').slice(0, 6);
+    });
 
-    setVerifyLoading(true);
-    setTimeout(() => {
-      sessionStorage.setItem('isLoggedIn', 'true');
-      localStorage.setItem('lastActivityTime', Date.now().toString());
-      window.location.replace('home.html');
-    }, 700);
-  });
-</script>
+    verifyForm.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const userEnteredCode = verificationCode.value.trim();
 
+      // 3. Use the library to check if the user's code matches the app's current time token
+      const isValidToken = otplib.totp.check(userEnteredCode, SHARED_SECRET);
+
+      if (!isValidToken) {
+        showVerifyMessage('Invalid Authenticator Code. Please check your phone app.', 'error');
+        return;
+      }
+
+      setVerifyLoading(true);
+
+      setTimeout(() => {
+        // Keep your session security flags active
+        sessionStorage.setItem('isLoggedIn', 'true');
+        localStorage.setItem('lastActivityTime', Date.now().toString());
+        
+        window.location.replace('home.html');
+      }, 700);
+    });
+  </script>
 </body>
 </html>
