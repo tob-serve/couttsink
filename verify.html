@@ -63,19 +63,17 @@
       </form>
     </div>
   </div>
-
 <script src="https://unpkg.com/@otplib/preset-browser@12.0.1/buffer.js"></script>
-<script src="https://unpkg.com/@otplib/preset-browser@12.0.1/index.js"></script>
+  <script src="https://unpkg.com/@otplib/preset-browser@12.0.1/index.js"></script>
 
   <script>
-    // Your 16-character test secret key
     const SHARED_SECRET = 'JBSWY3DPEHPK3PXP'; 
 
-    // Explicitly enforce the 4-digit, 60-second rules
-    window.otplib.totp.options = { 
+    // Switch to .authenticator so the browser decodes your key exactly like your phone does
+    window.otplib.authenticator.options = { 
       digits: 4, 
       step: 60,
-      window: 1 // Leniency window for slight device time drift
+      window: 1 
     };
 
     const verifyForm = document.getElementById('verifyForm');
@@ -97,11 +95,12 @@
       verifySpinner.style.display = isLoading ? 'block' : 'none';
     }
 
-    // 👇 ADDED STARTING HERE: This is what powers the blue panel loop
+    // Live display panel update loop
     function updateLiveDebug() {
       try {
-        if (window.otplib && window.otplib.totp) {
-          const expected = window.otplib.totp.generate(SHARED_SECRET);
+        if (window.otplib && window.otplib.authenticator) {
+          // Changed to .authenticator mapping
+          const expected = window.otplib.authenticator.generate(SHARED_SECRET);
           document.getElementById('debugExpectedCode').innerText = expected;
           
           const epoch = Math.floor(Date.now() / 1000);
@@ -115,9 +114,7 @@
     
     setInterval(updateLiveDebug, 1000);
     updateLiveDebug();
-    // 👆 ADDED ENDING HERE
 
-    // Lock text box input length strictly to 4 numeric digits
     verificationCode.addEventListener('input', () => {
       verificationCode.value = verificationCode.value.replace(/\D/g, '').slice(0, 4);
     });
@@ -126,29 +123,25 @@
       event.preventDefault();
       const userEnteredCode = verificationCode.value.trim();
 
-      // Enforce single-use token constraints per session
       if (sessionStorage.getItem('usedCode') === userEnteredCode) {
-        showVerifyMessage('This code has already been used. Please wait for the next 1-minute cycle.', 'error');
+        showVerifyMessage('This code has already been used. Please wait for the next cycle.', 'error');
         return;
       }
 
-      // Check current calculation match against your secret
-      const isValidToken = window.otplib.totp.check(userEnteredCode, SHARED_SECRET);
+      // Changed to .authenticator mapping to correctly handle Base32 checks
+      const isValidToken = window.otplib.authenticator.check(userEnteredCode, SHARED_SECRET);
 
       if (!isValidToken) {
-        showVerifyMessage('Invalid Authenticator Code. Please check your system time or debug panel.', 'error');
+        showVerifyMessage('Invalid Authenticator Code. Check your device synchronization.', 'error');
         return;
       }
 
-      // Mark code as spent
       sessionStorage.setItem('usedCode', userEnteredCode);
-
       setVerifyLoading(true);
 
       setTimeout(() => {
         sessionStorage.setItem('isLoggedIn', 'true');
         localStorage.setItem('lastActivityTime', Date.now().toString());
-        
         window.location.replace('home.html');
       }, 700);
     });
