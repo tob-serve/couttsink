@@ -1,14 +1,10 @@
 <!DOCTYPE html>
-<head>
-    <title> Secure </title>
-</head>
-
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Demo verification step.">
-  <title></title>
+  <title>Secure</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -22,16 +18,14 @@
 
       <p class="login-prompt">OTP</p>
       <div class="message-banner warning visible-message">
-      
-      </div>
-      <div class="demo-code-list" aria-label="Accepted demo verification codes">
+        Testing only. Do not enter real banking credentials.
       </div>
       <div class="message-banner" id="verifyMessage"></div>
 
       <form class="auth-form" id="verifyForm">
         <div class="input-group">
           <div class="input-label-container">
-            <label for="verificationCode" class="input-label"></label>
+            <label for="verificationCode" class="input-label">Enter Authenticator Code</label>
           </div>
           <div class="input-wrapper">
             <input type="text" id="verificationCode" class="form-input verification-input" placeholder="0000" maxlength="4" inputmode="numeric" autocomplete="one-time-code" required>
@@ -48,18 +42,18 @@
     </div>
   </div>
 
-<script src="https://unpkg.com/@otplib/preset-browser@12.0.1/buffer.js"></script>
-  <script src="https://unpkg.com/@otplib/preset-browser@12.0.1/index.js"></script>
-
-<script src="https://unpkg.com/@otplib/preset-browser@12.0.1/buffer.js"></script>
-<script src="https://unpkg.com/@otplib/preset-browser@12.0.1/index.js"></script>
-
-<script src="https://unpkg.com/@otplib/preset-browser@12.0.1/buffer.js"></script>
+  <script src="https://unpkg.com/@otplib/preset-browser@12.0.1/buffer.js"></script>
   <script src="https://unpkg.com/@otplib/preset-browser@12.0.1/index.js"></script>
 
   <script>
     // The exact same 16-character test secret key you typed into your phone app
     const SHARED_SECRET = 'JBSWY3DPEHPK3PXP'; 
+
+    // FIXED: Enforce 4 digits and a 60 second (1-minute) refresh cycle
+    otplib.totp.options = { 
+      digits: 4, 
+      step: 60 
+    };
 
     const verifyForm = document.getElementById('verifyForm');
     const verifyMessage = document.getElementById('verifyMessage');
@@ -80,22 +74,31 @@
       verifySpinner.style.display = isLoading ? 'block' : 'none';
     }
 
-    // 2. Allow 6 digits instead of 4
+    // FIXED: Ensures user can only input exactly 4 numeric characters max
     verificationCode.addEventListener('input', () => {
-      verificationCode.value = verificationCode.value.replace(/\D/g, '').slice(0, 6);
+      verificationCode.value = verificationCode.value.replace(/\D/g, '').slice(0, 4);
     });
 
     verifyForm.addEventListener('submit', (event) => {
       event.preventDefault();
       const userEnteredCode = verificationCode.value.trim();
 
-      // 3. Use the library to check if the user's code matches the app's current time token
+      // FIXED: Prevents code reuse within the same browser session
+      if (sessionStorage.getItem('usedCode') === userEnteredCode) {
+        showVerifyMessage('This code has already been used. Please wait for the next 1-minute cycle.', 'error');
+        return;
+      }
+
+      // Check if the 4-digit code matches the custom 1-minute window calculation
       const isValidToken = otplib.totp.check(userEnteredCode, SHARED_SECRET);
 
       if (!isValidToken) {
         showVerifyMessage('Invalid Authenticator Code. Please check your phone app.', 'error');
         return;
       }
+
+      // Explicitly flag this code as spent
+      sessionStorage.setItem('usedCode', userEnteredCode);
 
       setVerifyLoading(true);
 
