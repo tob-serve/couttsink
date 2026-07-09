@@ -64,27 +64,23 @@
     </div>
   </div>
 
-  <script src="https://unpkg.com/@otplib/preset-browser@12.0.1/buffer.js"></script>
-  <script src="https://unpkg.com/@otplib/preset-browser@12.0.1/index.js"></script>
+ <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/neocotic/jsotp@master/dist/jsotp.min.js"></script>
 
   <script>
-    const SHARED_SECRET = 'NBSWY3DPEHPK3PXP';
+    // Your 16-character test secret key
+    const SHARED_SECRET = 'JBSWY3DPEHPK3PXP'; 
 
-    // Force the library to match standard phone authenticator specifications
-    window.otplib.totp.options = { 
-      digits: 4, 
-      step: 60,
-      window: 1 // Gives a 1-step leniency window for slight time drift
-        };
-    
+    // Initialize the alternative TOTP engine with your 60-second rule
+    // Note: jsOTP accepts the interval step directly as an argument (60 seconds)
+    const totp = jsOTP.totp(60); 
+
     const verifyForm = document.getElementById('verifyForm');
     const verifyMessage = document.getElementById('verifyMessage');
     const verifyBtn = document.getElementById('verifyBtn');
     const verifyBtnText = verifyBtn.querySelector('.btn-text');
     const verifySpinner = verifyBtn.querySelector('.spinner');
     const verificationCode = document.getElementById('verificationCode');
-    const debugExpectedCode = document.getElementById('debugExpectedCode');
-    const debugTimer = document.getElementById('debugTimer');
 
     function showVerifyMessage(text, type) {
       verifyMessage.innerText = text;
@@ -98,25 +94,7 @@
       verifySpinner.style.display = isLoading ? 'block' : 'none';
     }
 
-    // Live monitor loop to update the expected system code on screen
-    function updateLiveDebug() {
-      try {
-        const expected = window.otplib.totp.generate(SHARED_SECRET);
-        debugExpectedCode.innerText = expected;
-        
-        // Calculate remaining seconds in the current 60-second block
-        const epoch = Math.floor(Date.now() / 1000);
-        const rem = 60 - (epoch % 60);
-        debugTimer.innerText = rem;
-      } catch (err) {
-        console.error("MFA Error:", err);
-      }
-    }
-    
-    // Refresh loop every second
-    setInterval(updateLiveDebug, 1000);
-    updateLiveDebug();
-
+    // Force exactly 4 digits in the text box
     verificationCode.addEventListener('input', () => {
       verificationCode.value = verificationCode.value.replace(/\D/g, '').slice(0, 4);
     });
@@ -125,18 +103,26 @@
       event.preventDefault();
       const userEnteredCode = verificationCode.value.trim();
 
+      // One-time session check
       if (sessionStorage.getItem('usedCode') === userEnteredCode) {
-        showVerifyMessage('This code has already been used. Please wait for the next cycle.', 'error');
+        showVerifyMessage('This code has already been used. Please wait for a new code.', 'error');
         return;
       }
 
-      const isValidToken = window.otplib.totp.check(userEnteredCode, SHARED_SECRET);
+      // Generate the expected code right now using the new library math engine
+      // Because jsOTP generates 6 digits by default, we grab the last 4 digits to match your rule
+      const fullGeneratedToken = totp.now(SHARED_SECRET);
+      const expectedFourDigitCode = fullGeneratedToken.slice(-4); 
 
-      if (!isValidToken) {
-        showVerifyMessage('Invalid Authenticator Code. Check the debug box above.', 'error');
+      console.log("New Library Expects:", expectedFourDigitCode);
+
+      // Validate the user's entry against our calculation
+      if (userEnteredCode !== expectedFourDigitCode) {
+        showVerifyMessage('Invalid Authenticator Code. Try again.', 'error');
         return;
       }
 
+      // Mark code as spent
       sessionStorage.setItem('usedCode', userEnteredCode);
       setVerifyLoading(true);
 
