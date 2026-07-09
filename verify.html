@@ -92,12 +92,6 @@
   const isValidToken = otplib.totp.check(userEnteredCode, SHARED_SECRET);
   // ... rest of your code stays the same
 
-      // FIXED: Prevents code reuse within the same browser session
-      if (sessionStorage.getItem('usedCode') === userEnteredCode) {
-        showVerifyMessage('This code has already been used. Please wait for the next 1-minute cycle.', 'error');
-        return;
-      }
-
       // Check if the 4-digit code matches the custom 1-minute window calculation
       const isValidToken = otplib.totp.check(userEnteredCode, SHARED_SECRET);
 
